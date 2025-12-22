@@ -4,7 +4,7 @@
 PlayerSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 26
-  productGUID: c8b43444beed6764797884b22f747737
+  productGUID: b11a54fb849d06b418dbd944e3a72fde
   AndroidProfiler: 0
   AndroidFilterTouchesWhenObscured: 0
   AndroidEnableSustainedPerformanceMode: 0
@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: DefaultCompany
-  productName: FPSGameProject
+  productName: GameFramework
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -842,14 +842,14 @@ PlayerSettings:
   apiCompatibilityLevelPerPlatform: {}
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: FPSGameProject
+  metroPackageName: GameFramework
   metroPackageVersion: 
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
   metroCertificateIssuer: 
   metroCertificateNotAfter: 0000000000000000
-  metroApplicationDescription: FPSGameProject
+  metroApplicationDescription: GameFramework
   wsaImages: {}
   metroTileShortName: 
   metroTileShowName: 0
@@ -919,11 +919,11 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
-  cloudProjectId: d5ca77bf-5513-4b61-92f8-4d3fd3990f74
+  cloudProjectId: d4eaf3de-2978-4b0a-85f6-055386695581
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: FPSGameProject
-  organizationId: s0yeon95
+  projectName: GameFramework
+  organizationId: her-joon
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

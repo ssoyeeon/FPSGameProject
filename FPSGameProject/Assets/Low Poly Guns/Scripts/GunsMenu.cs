@@ -31,13 +31,13 @@ public class GunsMenu : MonoBehaviour
     }
     private void Update()
     {
-        if ((Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject()) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began && !EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId)))
-        {
-            Buttons.SetActive(false);
-        }
-        else if(Input.touchCount == 0 && !Input.GetMouseButton(0))
-        {
-            Buttons.SetActive(true);
-        }
+        //if ((Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject()) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began && !EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId)))
+        //{
+        //    Buttons.SetActive(false);
+        //}
+        //else if(Input.touchCount == 0 && !Input.GetMouseButton(0))
+        //{
+        //    Buttons.SetActive(true);
+        //}
     }
 }
