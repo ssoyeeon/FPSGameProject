@@ -4,6 +4,8 @@ using TMPro;
 
 public class TestSceneUI : MonoBehaviour
 {
+    public GameObject UICanvas;
+
     [Header("UI References")]
     public Button loadGameSceneButton;
     public Button loadMainMenuButton;
@@ -28,6 +30,7 @@ public class TestSceneUI : MonoBehaviour
         // 이벤트 구독
         GameEvents.OnSceneChanged += OnSceneChanged;
         GameEvents.OnScoreChanged += OnScoreChanged;
+        UICanvas.SetActive(false);
     }
 
     private void OnDestroy()
@@ -40,6 +43,14 @@ public class TestSceneUI : MonoBehaviour
     private void Update()
     {
         UpdateUI();
+        if(Input.GetKeyDown(KeyCode.Escape) && gameObject.activeInHierarchy)
+        {
+            OnUI();
+        }
+        else if(Input.GetKeyDown(KeyCode.Escape) && gameObject.activeInHierarchy == false)
+        {
+            OffUI();
+        }
     }
 
     private void SetupButtons()
@@ -66,6 +77,22 @@ public class TestSceneUI : MonoBehaviour
 
         if (gameOverButton != null)
             gameOverButton.onClick.AddListener(() => GameManager.Instance.GameOver());
+    }
+
+    private void OnUI()
+    {
+        if(UICanvas.activeInHierarchy == false)
+        {
+            UICanvas.SetActive(true);
+        }
+    }
+
+    private void OffUI()
+    {
+        if (UICanvas.activeInHierarchy == true)
+        {
+            UICanvas.SetActive(false);
+        }
     }
 
     private void UpdateUI()
