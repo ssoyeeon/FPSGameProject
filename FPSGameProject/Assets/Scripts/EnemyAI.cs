@@ -25,4 +25,8 @@ public class EnemyAI : MonoBehaviour
             }
         }
     }
+    public void Update()
+    {
+        Move();
+    }
 }

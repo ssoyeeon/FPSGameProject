@@ -32,6 +32,7 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
         [NonSerialized] public TransformStreamHandle midHandle;
         [NonSerialized] public TransformStreamHandle rootHandle;
 
+        // 애니메이터의 스트림 핸들을 초기화하여 IK 연산에 사용할 준비를 합니다.
         public void Initialize(Animator animator)
         {
             tipHandle = animator.BindStreamTransform(tip);
@@ -68,6 +69,7 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
 
         private Animator _animator;
 
+        // 애니메이터 파라미터 해시값 캐싱 (성능 최적화)
         private static int RIGHT_HAND_WEIGHT = Animator.StringToHash("RightHandWeight");
         private static int TAC_SPRINT_WEIGHT = Animator.StringToHash("TacSprintWeight");
         private static int GRENADE_WEIGHT = Animator.StringToHash("GrenadeWeight");
@@ -97,7 +99,12 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
 
         private FPSProceduralJob _job;
         private AnimationScriptPlayable _playable;
-        
+
+        public Texture2D defaultCrosshair;          // 기본 크로스헤어 텍스처
+        private Color crosshairColor = Color.white;  // 크로스헤어 색상
+        private float crosshairSize = 25f;           // 크로스헤어 크기
+
+        // 현재 무기를 비활성화하고 다음 인덱스의 무기를 장착합니다 (무기 순환).
         private void EquipWeapon_Incremental()
         {
             GetActiveWeapon().gameObject.SetActive(false);
@@ -105,6 +112,9 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             EquipWeapon();
         }
 
+        // 실제 무기를 장착하는 로직을 처리합니다.
+        // fastEquip: 애니메이션 없이 빠르게 장착할지 여부
+        // equipImmediately: 딜레이 없이 즉시 장착 로직을 수행할지 여부
         private void EquipWeapon(bool fastEquip = false, bool equipImmediately = false)
         {
             if (equipImmediately)
@@ -116,6 +126,7 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
                 GetActiveWeapon().OnEquipped(fastEquip);
             }
 
+            // 절차적 애니메이션 Job에 현재 무기의 데이터(손 위치, 조준 위치 등)를 전달합니다.
             _job.defaultRightHandPose = GetActiveWeapon().rightHandPose;
             _job.additiveAdsPose = GetActiveWeapon().adsPose;
             _job.gunSettings = GetActiveWeapon().weaponSettings;
@@ -124,31 +135,37 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
 
             if (equipImmediately) return;
             
+            // 약간의 딜레이 후 무기 모델을 보이게 설정합니다.
             Invoke(nameof(SetWeaponVisible), 0.05f);
         }
 
+        // 수류탄 투척 후 등, 무기를 빠르게 다시 꺼낼 때 사용합니다.
         private void FastEquipWeapon()
         {
             EquipWeapon(true);
         }
 
+        // 수류탄 투척 애니메이션 실행 후, 일정 시간 뒤에 무기를 다시 장착하도록 예약합니다.
         private void ThrowGrenade()
         {
             GetActiveWeapon().gameObject.SetActive(false);
             Invoke(nameof(FastEquipWeapon), playerSettings.grenadeDelay);
         }
 
+        // 착지 시 애니메이터의 공중 상태(IsInAir)를 해제합니다.
         private void OnLand()
         {
             _animator.SetBool(IS_IN_AIR, false);
         }
 
+        // 수류탄 투척 키 입력 시 호출됩니다. 투척 트리거를 당기고 무기 해제를 시작합니다.
         public void OnThrowGrenade()
         {
             _animator.SetTrigger(THROW_GRENADE);
             Invoke(nameof(ThrowGrenade), GetActiveWeapon().UnEquipDelay);
         }
 
+        // 무기 교체 키 입력 시 호출됩니다. 현재 무기를 집어넣고 다음 무기를 꺼냅니다.
         public void OnChangeWeapon()
         {
             if (_weapons.Count <= 1) return;
@@ -156,6 +173,7 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             Invoke(nameof(EquipWeapon_Incremental), delay);
         }
 
+        // 조정간(단발/연사) 변경 키 입력 시 호출됩니다. 소리를 재생하고 IK 모션을 적용합니다.
         public void OnChangeFireMode()
         {
             var prevFireMode = GetActiveWeapon().ActiveFireMode;
@@ -168,23 +186,27 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             }
         }
         
+        // 재장전 키 입력 시 호출됩니다.
         public void OnReload()
         {
             GetActiveWeapon().OnReload();
         }
         
+        // 점프 키 입력 시 호출됩니다. 공중 상태로 설정하고 착지 로직을 예약합니다.
         public void OnJump()
         {
             _animator.SetBool(IS_IN_AIR, true);
             Invoke(nameof(OnLand), 0.4f);
         }
         
+        // 무기 살펴보기(Inspect) 키 입력 시 호출됩니다.
         public void OnInspect()
         {
             _animator.CrossFade(INSPECT, 0.1f);
         }
         
 #if ENABLE_INPUT_SYSTEM
+        // 마우스 휠 입력 처리: 무기를 이전/다음으로 교체합니다.
         public void OnMouseWheel(InputValue value)
         {
             float mouseWheelValue = value.Get<float>();
@@ -201,6 +223,7 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             EquipWeapon(false, true);
         }
         
+        // 발사 버튼 입력 처리: 누름/뗌 상태에 따라 무기의 발사 로직을 호출합니다.
         public void OnFire(InputValue value)
         {
             if(value.isPressed)
@@ -212,6 +235,7 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             GetActiveWeapon().OnFireReleased();
         }
 
+        // 조준(Zoom) 버튼 입력 처리: 조준 상태를 토글하고 사운드 및 IK 모션을 실행합니다.
         public void OnAim(InputValue value)
         {
             bool wasAiming = _isAiming;
@@ -225,23 +249,27 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             }
         }
 
+        // 이동 입력(WASD) 값을 받아옵니다.
         public void OnMove(InputValue value)
         {
             _moveInput = value.Get<Vector2>();
         }
 
+        // 달리기(Sprint) 입력 처리
         public void OnSprint(InputValue value)
         {
             _bSprinting = value.isPressed;
             if(!_bSprinting) _bTacSprinting = false;
         }
         
+        // 전술적 달리기(TacSprint) 입력 처리
         public void OnTacSprint(InputValue value)
         {
             if (!_bSprinting) return;
             _bTacSprinting = value.isPressed;
         }
 
+        // 마우스 시점 회전 입력 값을 받아옵니다.
         public void OnLook(InputValue value)
         {
             Vector2 input = value.Get<Vector2>() * playerSettings.sensitivity;
@@ -250,18 +278,20 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
         }
 #endif
 #if !ENABLE_INPUT_SYSTEM
+        // 레거시 입력 시스템용 시점 회전 처리
         private void OnLookLegacy()
         {
             Vector2 input = new Vector2()
             {
-                x = Input.GetAxis("Horizontal"),
-                y = Input.GetAxis("Vertical")
+                x = Input.GetAxis("Mouse X"),
+                y = Input.GetAxis("Mouse Y")
             };
             
-            _lookInput.y = Mathf.Clamp(_lookInput.y + input.y, -90f, 90f);
+            _lookInput.y = Mathf.Clamp(_lookInput.y - input.y, -90f, 90f);
             _lookInput.x = input.x;
         }
 
+        // 레거시 입력 시스템용 마우스 휠 처리
         private void OnMouseWheelLegacy()
         {
             float mouseWheelValue = Input.GetAxis("Mouse ScrollWheel");
@@ -277,6 +307,7 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             GetActiveWeapon().OnEquipped_Immediate();
         }
 
+        // 레거시 입력 시스템용 조준 처리
         private void OnAimLegacy(bool isPressed)
         {
             bool wasAiming = _isAiming;
@@ -290,6 +321,7 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             }
         }
         
+        // 레거시 입력 시스템용 이동 처리
         private void OnMoveLegacy()
         {
             _moveInput.x = Input.GetAxis("Horizontal");
@@ -297,18 +329,21 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             _moveInput.Normalize();
         }
 
+        // 레거시 입력 시스템용 달리기 처리
         private void OnSprintLegacy(bool isPressed)
         {
             _bSprinting = isPressed;
             if(!_bSprinting) _bTacSprinting = false;
         }
 
+        // 레거시 입력 시스템용 전술 달리기 처리
         private void OnTacSprintLegacy(bool isPressed)
         {
             if (!_bSprinting) return;
             _bTacSprinting = isPressed;
         }
         
+        // 레거시 입력들을 통합해서 매 프레임 체크하는 함수
         private void ProcessLegacyInputs()
         {
             OnMouseWheelLegacy();
@@ -329,28 +364,37 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             OnTacSprintLegacy(Input.GetKey(KeyCode.X));
         }
 #endif
+        // 무기 게임 오브젝트를 활성화하여 보이게 합니다.
         private void SetWeaponVisible()
         {
             GetActiveWeapon().gameObject.SetActive(true);
         }
 
+        // 현재 활성화된 무기 컴포넌트를 반환합니다.
         public FPSWeapon GetActiveWeapon()
         {
             return _weapons[_activeWeaponIndex];
         }
 
+        // 현재 무기의 프리팹 원본 정보를 반환합니다.
         public FPSWeapon GetActivePrefab()
         {
             return _prefabComponents[_activeWeaponIndex];
         }
 
+        // 초기화 함수: 마우스 설정, 컴포넌트 할당, 절차적 애니메이션 Job 설정, 무기 생성 등을 수행합니다.
         private void Start()
         {
+            Cursor.lockState = CursorLockMode.Locked;   //마우스 잠금 
+            Cursor.visible = false; // 마우스 커서 숨김
+
+
             _animator = GetComponent<Animator>();
             _controller = transform.root.GetComponent<CharacterController>();
             _recoilAnimation = GetComponent<RecoilAnimation>();
             _playerSound = GetComponent<FPSPlayerSound>();
 
+            // 절차적 애니메이션(IK 등)을 위한 Job 설정
             _job = new FPSProceduralJob()
             {
                 animator = _animator,
@@ -364,6 +408,7 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             };
             _job.Setup();
             
+            // Playable Graph 생성 및 연결 (애니메이션 시스템에 커스텀 로직 주입)
             _playable = AnimationScriptPlayable.Create(_animator.playableGraph, _job);
             var output = AnimationPlayableOutput.Create(_animator.playableGraph, "FPS Procedural Output", 
                 _animator);
@@ -371,6 +416,7 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             output.SetAnimationStreamSource(AnimationStreamSource.PreviousInputs);
             output.SetSourcePlayable(_playable);
             
+            // 애니메이터 레이어 인덱스 캐싱
             _triggerDisciplineLayerIndex = _animator.GetLayerIndex("TriggerDiscipline");
             _rightHandLayerIndex = _animator.GetLayerIndex("RightHand");
             _tacSprintLayerIndex = _animator.GetLayerIndex("TacSprint");
@@ -378,6 +424,7 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             KTransform root = new KTransform(transform);
             _localCameraPoint = root.GetRelativeTransform(new KTransform(cameraPoint), false);
 
+            // 설정된 무기 프리팹들을 인스턴스화하고 리스트에 추가합니다.
             foreach (var prefab in playerSettings.weaponPrefabs)
             {
                 var prefabComponent = prefab.GetComponent<FPSWeapon>();
@@ -407,6 +454,7 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             EquipWeapon();
         }
 
+        // 현재 상태(달리기, 걷기 등)에 따른 목표 속도(Gait) 값을 계산합니다.
         private float GetDesiredGait()
         {
             if (_bTacSprinting) return 3f;
@@ -414,36 +462,43 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             return _moveInput.magnitude;
         }
         
+        // 매 프레임 호출: 입력 처리, 애니메이션 상태 업데이트, 캐릭터 이동 등을 수행합니다.
         private void Update()
         {
 #if !ENABLE_INPUT_SYSTEM
             ProcessLegacyInputs();
 #endif
+            // 조준(ADS) 가중치를 부드럽게 보간합니다.
             _adsWeight = Mathf.Clamp01(_adsWeight + playerSettings.aimSpeed * Time.deltaTime * (_isAiming ? 1f : -1f));
 
+            // 이동 속도(Gait) 값을 부드럽게 보간합니다.
             _smoothGait = Mathf.Lerp(_smoothGait, GetDesiredGait(), 
                 KMath.ExpDecayAlpha(playerSettings.gaitSmoothing, Time.deltaTime));
             
+            // 애니메이터에 계산된 파라미터들을 전달합니다.
             _animator.SetFloat(GAIT, _smoothGait);
             _animator.SetLayerWeight(_tacSprintLayerIndex, Mathf.Clamp01(_smoothGait - 2f));
 
+            // 달리기 중 사격 금지(Trigger Discipline) 처리
             bool triggerAllowed = GetActiveWeapon().weaponSettings.useSprintTriggerDiscipline;
-
             _animator.SetLayerWeight(_triggerDisciplineLayerIndex,
                 triggerAllowed ? _animator.GetFloat(TAC_SPRINT_WEIGHT) : 0f);
 
             _animator.SetLayerWeight(_rightHandLayerIndex, _animator.GetFloat(RIGHT_HAND_WEIGHT));
             
+            // 절차적 애니메이션 Job 데이터 업데이트
             _job.Update();
             _job.adsWeight = _adsWeight;
             _job.ikWeight = ikWeight;
             _playable.SetJobData(_job);
             
+            // 카메라 및 캐릭터 회전 처리
             Vector3 cameraPosition = -_localCameraPoint.position;
             
             transform.localRotation = Quaternion.Euler(_lookInput.y, 0f, 0f);
             transform.localPosition = transform.localRotation * cameraPosition - cameraPosition;
 
+            // 캐릭터 컨트롤러를 이용한 실제 이동 처리
             if (_controller != null)
             {
                 Transform root = _controller.transform;
@@ -454,9 +509,26 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             }
         }
 
+        // (현재 사용되지 않는 것으로 보임, Animation Event로 호출될 가능성 있음) 반동 애니메이션 재생
         private void OnFire()
         {
             _recoilAnimation.Play();
+        }
+
+        // GUI 그리기: 화면 중앙에 크로스헤어를 그립니다.
+        // OnGUI는 Unity의 구형 UI 시스템으로, 성능상 추천되지 않으나 간단한 테스트용으로는 작동합니다.
+        void OnGUI()
+        {
+            // 화면 중앙 좌표 계산
+            float centerX = Screen.width / 2;
+            float centerY = Screen.height / 2;
+
+            // 크로스헤어 위치 및 크기 계산
+            Rect crosshairRect = new Rect(centerX - crosshairSize / 2, centerY - crosshairSize / 2, crosshairSize, crosshairSize);
+
+            // 크로스헤어 그리기
+            GUI.color = crosshairColor;
+            GUI.DrawTexture(crosshairRect, defaultCrosshair);
         }
     }
 }
