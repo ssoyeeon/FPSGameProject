@@ -351,7 +351,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  currentHealth: 0
+  currentHealth: 100
   deathEffect: {fileID: 0}
   damageEffect: {fileID: 0}
   destroyDelay: 0.4
@@ -864,7 +864,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  currentHealth: 0
+  currentHealth: 100
   deathEffect: {fileID: 0}
   damageEffect: {fileID: 0}
   destroyDelay: 0.4
@@ -1274,7 +1274,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  currentHealth: 0
+  currentHealth: 100
   deathEffect: {fileID: 0}
   damageEffect: {fileID: 0}
   destroyDelay: 0.4
@@ -1573,7 +1573,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  currentHealth: 0
+  currentHealth: 100
   deathEffect: {fileID: 0}
   damageEffect: {fileID: 0}
   destroyDelay: 0.4

@@ -48,7 +48,9 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
         public float AdsWeight => _adsWeight;
         
         public FPSPlayerSettings playerSettings;
-        
+
+        [HideInInspector] public bool isReloading = false;
+
         [Header("Skeleton")]
         [SerializeField] private Transform skeletonRoot;
         [SerializeField] private Transform weaponBone;
@@ -504,7 +506,13 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
                 Transform root = _controller.transform;
                 root.rotation *= Quaternion.Euler(0f, _lookInput.x, 0f);
                 Vector3 movement = root.forward * _moveInput.y + root.right * _moveInput.x;
-                movement *= _smoothGait * 1.5f;
+                
+                // [수정] 원래 코드 뒤에 속도 페널티 로직 추가
+                // isReloading이 true면 0.5(절반 속도), 아니면 1(정상 속도)을 곱함
+                float speedMultiplier = isReloading ? 0.5f : 1f;
+
+                movement *= _smoothGait * 1.5f * speedMultiplier; // 여기에 곱해주기!
+
                 _controller.Move(movement * Time.deltaTime);
             }
         }
