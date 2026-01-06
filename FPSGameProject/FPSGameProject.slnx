@@ -1,0 +1,9 @@
+﻿<Solution>
+  <Project Path="RetargetPro.Runtime.csproj" />
+  <Project Path="KAnimationCore.Editor.csproj" />
+  <Project Path="RetargetPro.Editor.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="KAnimationCore.Runtime.csproj" />
+  <Project Path="RecoilAnimation.Runtime.csproj" />
+</Solution>
