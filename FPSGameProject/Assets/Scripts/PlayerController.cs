@@ -111,9 +111,9 @@ public class PlayerController : MonoBehaviour
     }
     void Movement()
     {
-        Vector3 targetVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.z * moveSpeed);
+        Vector3 targetVelocity = new Vector3(moveDirection.x * moveSpeed, rb.linearVelocity.y, moveDirection.z * moveSpeed);
 
-        Vector3 velocityChange = (targetVelocity - rb.velocity);
+        Vector3 velocityChange = (targetVelocity - rb.linearVelocity);
         velocityChange.y = 0;
 
         rb.AddForce(velocityChange, ForceMode.VelocityChange);

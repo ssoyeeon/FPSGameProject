@@ -106,6 +106,17 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
         private Color crosshairColor = Color.white;  // 크로스헤어 색상
         private float crosshairSize = 25f;           // 크로스헤어 크기
 
+
+        [Header("Attack")]
+        [SerializeField] private float range = 3.0f;
+        [SerializeField] private float force = 8.0f;
+        [SerializeField] private int damage = 1;
+        [SerializeField] private LayerMask hitMask = ~0;
+
+        [Header("Aim")]
+        [Tooltip("비우면 main Camera 사용")]
+        [SerializeField] private Transform aimOrigin;
+
         // 현재 무기를 비활성화하고 다음 인덱스의 무기를 장착합니다 (무기 순환).
         private void EquipWeapon_Incremental()
         {
@@ -113,7 +124,7 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
             _activeWeaponIndex = _activeWeaponIndex + 1 > _weapons.Count - 1 ? 0 : _activeWeaponIndex + 1;
             EquipWeapon();
         }
-
+        
         // 실제 무기를 장착하는 로직을 처리합니다.
         // fastEquip: 애니메이션 없이 빠르게 장착할지 여부
         // equipImmediately: 딜레이 없이 즉시 장착 로직을 수행할지 여부
@@ -230,6 +241,28 @@ namespace KINEMATION.FPSAnimationPack.Scripts.Player
         {
             if(value.isPressed)
             {
+                Ray ray = new Ray(cameraPoint.position, cameraPoint.transform.forward);
+
+                if(Physics.Raycast(ray, out RaycastHit hit, range, hitMask, QueryTriggerInteraction.Ignore))
+                {
+                    if(hit.collider.TryGetComponent<IHittable>(out var hittable))
+                    {
+                        Vector3 dir = (hit.point - ray.origin).normalized;
+
+                        var info = new HitInfo(
+
+                            point: hit.point,
+                            normal: hit.normal,
+                            direction: dir,
+                            force: force,
+                            damage: damage,
+                            attacker: gameObject
+                        );
+
+                        hittable.OnHit(in info);
+                        return;
+                    }
+                }
                 GetActiveWeapon().OnFirePressed();
                 return;
             }
